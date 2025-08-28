@@ -1,22 +1,20 @@
 ﻿using System.Collections;
 using System.Reflection;
 
-using MelonLoader;
-using UnityEngine;
-using UnityEngine.UI;
 using HarmonyLib;
-
-
 using Il2Cpp;
 using Il2CppInterop;
+//using Il2CppInterop.Runtime;
+//using Il2CppInterop.Runtime.Injection;
+//using Il2CppInterop.Runtime.InteropTypes;
 using Il2CppTLD.UI;
 using Il2CppTMPro;
-using Il2CppInterop.Runtime.Injection;
-using Il2CppInterop.Runtime;
-using Il2CppInterop.Runtime.InteropTypes;
 
+using MelonLoader;
+using UnityEngine;
+//using UnityEngine.UI;
+//using static Il2Cpp.UIAtlas;
 
-// using ModSettingsAPI;
 
 namespace InterloperHudPro
 {
@@ -117,71 +115,26 @@ namespace InterloperHudPro
 
     internal static class Patches
     {
-        //// ===== HUD Panel Patch =====
-        //[HarmonyPatch(typeof(Panel_HUD), "Enable")]
-        //private static class HelloHUDPatch
-        //{
-        //    private static bool initialized = false;
-
-        //    private static void Postfix(Panel_HUD __instance)
-        //    {
-        //        //if (initialized) return;
-        //        initialized = true;
-
-        //        // Clone the condition label from HUD
-        //        var conditionMeter = __instance.m_Label_Condition.transform;
-        //        if (conditionMeter == null) return;
-
-        //        var helloGO = new GameObject("HelloConditionLabel");
-        //        helloGO.transform.SetParent(conditionMeter, false);
-
-        //        var helloLabel = helloGO.AddComponent<UILabel>();
-        //        helloLabel.text = InterloperHudProMain.getHUDText1();
-        //        helloLabel.alignment = NGUIText.Alignment.Center;
-        //        helloLabel.fontSize = 18;
-        //        helloLabel.color = Color.yellow;
-
-        //        // Move it above the condition circle
-        //        helloLabel.transform.localPosition += new Vector3(0, 50, 0);
-
-        //        NGUITools.SetActive(helloGO, true);
-        //        // MelonLogger.Msg("Interloper HelloHUDPatch");
-        //    }
-        //}
-
-        //[HarmonyPatch(typeof(Panel_HUD), "Enable")]
-        //private static class ShowHudNumbers
-        //{
-        //    private static void Postfix(Panel_HUD __instance)
-        //    {
-
-        //        foreach (UILabel lbl in new UILabel[] {
-        //            __instance.m_Label_Condition,
-        //            __instance.m_Label_DebugLines,
-        //            __instance.m_Label_SurvivalTime,
-        //        })
-        //        {
-        //            if (lbl == null) continue;
-        //            lbl.enabled = true;
-        //            NGUITools.SetActive(lbl.gameObject, true);
-        //            lbl.color = Color.yellow; // make them pop
-        //        }
-        //    }
-        //}
-
+        private static Color darkRed = new Color(0.8f, 0.2f, 0.23f, 1.000f);
 
         [HarmonyPatch(typeof(StatusBar), "Update")]
         private static class TempMeter
         {
             private static double elapsedMinutes = 0d;
-            private static Color darkRed = new Color(0.8f, 0.2f, 0.23f, 1.000f);
             private static void Postfix(StatusBar __instance)
             {
                 //if (__instance.m_StatusBarType != StatusBar.StatusBarType.Hunger) return;
-                if (__instance.m_StatusBarType != StatusBar.StatusBarType.Cold) return;
                 if (!__instance.m_IsOnHUD) return;
 
                 UISprite sprite = __instance.m_OuterBoxSprite.GetComponent<UISprite>();
+                
+                if (__instance.m_StatusBarType == StatusBar.StatusBarType.Cold)
+                {
+                    UpdateTempLabel(sprite);
+                }
+            }
+            private static void UpdateTempLabel(UISprite sprite)
+            {
                 GameObject spriteObject = sprite.gameObject;
                 GameObject tempObject = spriteObject.transform.parent.FindChild("temperature")?.gameObject;
 
@@ -191,7 +144,7 @@ namespace InterloperHudPro
                     tempObject = new GameObject("temperature");
                     tempObject.transform.SetParent(spriteObject.transform.parent);
                     tempObject.transform.localScale = spriteObject.transform.localScale;
-                    
+
 
                     UILabel tempLabel = tempObject.AddComponent<UILabel>();
                     tempLabel.text = "0°C";
@@ -203,16 +156,12 @@ namespace InterloperHudPro
                     tempLabel.effectColor = new Color(0.125f, 0.094f, 0.094f, 0.6f);
                     tempLabel.effectDistance = new Vector2(1.7f, 1.7f);
 
-                    
-                    MelonLogger.Msg(tempLabel.width + " " + tempLabel.text.Length);
-                    
-
                     tempLabel.overflowMethod = UILabel.Overflow.ResizeFreely;
                     tempLabel.alignment = NGUIText.Alignment.Left;
                     tempLabel.pivot = UIWidget.Pivot.Left;
 
                     //int x_offset = -sprite.width / 2; // + tempLabel.width/2;
-                    int x_offset =  - tempLabel.width/2;
+                    int x_offset = -tempLabel.width / 2;
                     int y_offset = 20 + tempLabel.height;
                     tempObject.transform.localPosition = new Vector3(x_offset, y_offset, 0);
                 }
@@ -238,5 +187,79 @@ namespace InterloperHudPro
                 }
             }
         }
+
+
+        
+        [HarmonyPatch(typeof(Panel_HUD), "Update")]
+        private static class ActiveItemHUDPatch
+        {
+            private static double elapsedMinutes = 0d;
+
+            private static void Postfix(Panel_HUD __instance)
+            {
+                // TODO get this working
+                var item = __instance.m_EquipItemPopup;
+                if (item == null) return;
+                //if (!item.gameObject.activeInHierarchy) return;
+
+                double now = GameManager.GetHighResolutionTimerManager().GetElapsedMinutes();
+                if (now - elapsedMinutes < 0.01d) return;
+                elapsedMinutes = now;
+
+                var activeItem = GameManager.GetPlayerManagerComponent().m_ItemInHands;
+                if (activeItem)
+                {
+                    var hudText2 = InterloperHudProMain.getHUDText2();
+                    UISprite[] sprites = __instance.m_EquipItemPopup.GetComponentsInChildren<UISprite>();
+                    foreach (UISprite sprite in sprites)
+                    {
+                        if (sprite != null && sprite.type == UIBasicSprite.Type.Filled && sprite.depth >= 3)
+                        {
+
+                            var s = sprite;
+                            var msg = $"Found bar: GO={s.gameObject.name.PadRight(20)}, Atlas={s.spriteName.PadRight(30)}, Depth={s.depth}";
+                            msg += $"Parent={s.transform.parent.name} active1={s.gameObject.activeInHierarchy} active2={s.isActiveAndEnabled}";                            
+                            EnsureHudLabel(sprite.gameObject, "conditionpercent", hudText2, Color.yellow, new Vector3(40, 0, 0));
+                        }
+                    }
+                }
+
+            }
+
+            private static void EnsureHudLabel(GameObject parentSprite, string name, string text, Color color, Vector3 offset)
+            {
+                var labelObj = parentSprite.transform.parent.Find(name)?.gameObject;
+                UILabel label;
+                if (labelObj == null)
+                {
+                    labelObj = new GameObject(name);
+                    labelObj.transform.SetParent(parentSprite.transform.parent, false);
+                    labelObj.transform.localScale = parentSprite.transform.localScale;
+                    labelObj.transform.localPosition = offset;
+
+                    label = labelObj.AddComponent<UILabel>();
+                    label.font = GameManager.GetFontManager().GetUIFontForCharacterSet(CharacterSet.Latin);
+                    label.fontSize = 20;
+                    label.effectStyle = UILabel.Effect.Outline;
+                    label.effectColor = new Color(0, 0, 0, 0.6f);
+                    label.effectDistance = new Vector2(1.5f, 1.5f);
+                    label.alignment = NGUIText.Alignment.Left;
+                    label.pivot = UIWidget.Pivot.Left;
+
+                    //int x_offset = -parentSprite. / 2; // + tempLabel.width/2;
+                    int x_offset = label.width;
+                    int y_offset = -26;
+                    label.transform.localPosition = new Vector3(x_offset, y_offset, 0);
+                }
+                else
+                {
+                    label = labelObj.GetComponent<UILabel>();
+                }
+
+                label.text = text;
+                // label.color = color;
+            }
+        }
     }
+
 }
