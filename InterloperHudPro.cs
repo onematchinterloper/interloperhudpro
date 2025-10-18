@@ -43,7 +43,7 @@ namespace InterloperHudPro
             float currentWeight = GameManager.GetInventoryComponent().GetTotalWeightKG().m_Units / 1e9f;
 
             var tempText = $"{airTemp:F0}°   {windChill:F0}°   {feelsLike:F0}°";
-            var weightText = $"{currentWeight:F2}KG";
+            var weightText = $"{currentWeight:F2} KG";
 
             return tempText + "       " + weightText;
         }
@@ -115,11 +115,41 @@ namespace InterloperHudPro
 
     internal static class Patches
     {
+
+        [HarmonyPatch(typeof(GameManager), "Start")]
+        private static class ResetHudRefsOnGameStart
+        {
+            private static void Postfix()
+            {
+                // Clean up TempMeter
+                if (TempMeter.tempObject != null)
+                {
+                    UnityEngine.Object.Destroy(TempMeter.tempObject);
+                    TempMeter.tempObject = null;
+                }
+                TempMeter.elapsedMinutes = 0d;
+
+                // Clean up ActiveItemHUDPatch
+                ActiveItemHUDPatch.elapsedMinutes = 0d;
+                // (If you ever add a static GameObject/UILabel here, destroy it too)
+
+                // Clean up DayNightHUDPatch
+                if (DayNightHUDPatch.dayNightLabel != null)
+                {
+                    UnityEngine.Object.Destroy(DayNightHUDPatch.dayNightLabel.gameObject);
+                    DayNightHUDPatch.dayNightLabel = null;
+                }
+                DayNightHUDPatch.elapsedMinutes = 0d;
+            }
+        }
+
         private static Color darkRed = new Color(0.8f, 0.2f, 0.23f, 1.000f);
         [HarmonyPatch(typeof(StatusBar), "Update")]
         private static class TempMeter
         {
-            private static double elapsedMinutes = 0d;
+            public static double elapsedMinutes = 0d;
+            public static GameObject tempObject;
+
             private static void Postfix(StatusBar __instance)
             {
                 //if (__instance.m_StatusBarType != StatusBar.StatusBarType.Hunger) return;
@@ -127,24 +157,26 @@ namespace InterloperHudPro
 
                 if (__instance.m_StatusBarType == StatusBar.StatusBarType.Cold)
                 {
-                    UISprite sprite = __instance.m_OuterBoxSprite.GetComponent<UISprite>();
-                    GameObject spriteObject = sprite.gameObject;
-                    GameObject tempObject = spriteObject.transform.parent.FindChild("temperature")?.gameObject;
-                    UpdateTempLabel(spriteObject, tempObject);
+                    UpdateTempLabel(__instance);
                 }
             }
-            private static void UpdateTempLabel(GameObject spriteObject, GameObject tempObject)
+
+            private static void UpdateTempLabel(StatusBar __instance)
             {
                 if (tempObject == null)
                 {
                     // init
+                    UISprite sprite = __instance.m_OuterBoxSprite.GetComponent<UISprite>();
+                    GameObject spriteObject = sprite.gameObject;
+
                     tempObject = new GameObject("temperature");
                     tempObject.transform.SetParent(spriteObject.transform.parent);
                     tempObject.transform.localScale = spriteObject.transform.localScale;
 
                     UILabel tempLabel = tempObject.AddComponent<UILabel>();
                     tempLabel.text = "0°C";
-                    tempLabel.color = Color.white;
+                    // tempLabel.color = Color.white;
+                    tempLabel.color = new Color(0.9f, 0.95f, 1f);  // Use an off white
                     tempLabel.fontStyle = FontStyle.Normal;
                     tempLabel.font = GameManager.GetFontManager().GetUIFontForCharacterSet(CharacterSet.Latin);
                     tempLabel.fontSize = 32;
@@ -186,7 +218,7 @@ namespace InterloperHudPro
         [HarmonyPatch(typeof(Panel_HUD), "Update")]
         private static class ActiveItemHUDPatch
         {
-            private static double elapsedMinutes = 0d;
+            public static double elapsedMinutes = 0d;
 
             private static void Postfix(Panel_HUD __instance)
             {
@@ -198,7 +230,6 @@ namespace InterloperHudPro
                 var item = __instance.m_EquipItemPopup;
                 if (item == null) return;
                 //if (!item.gameObject.activeInHierarchy) return;
-
 
                 var activeItem = GameManager.GetPlayerManagerComponent().m_ItemInHands;
                 if (activeItem)
@@ -258,13 +289,13 @@ namespace InterloperHudPro
         [HarmonyPatch(typeof(Panel_HUD), "Update")]
         private static class DayNightHUDPatch
         {
-            private static UILabel dayNightLabel;
-            private static double elapsedMinutes = 0d;
+            public static UILabel dayNightLabel;
+            public static double elapsedMinutes = 0d;
 
             private static void Postfix(Panel_HUD __instance)
             {
                 double now = GameManager.GetHighResolutionTimerManager().GetElapsedMinutes();
-                if (now - elapsedMinutes < 0.01d) return;
+                if (dayNightLabel != null && now - elapsedMinutes < 0.01d) return;
                 elapsedMinutes = now;
 
                 TimeOfDay tod = GameManager.GetTimeOfDayComponent();
@@ -274,16 +305,47 @@ namespace InterloperHudPro
                 int hour = Mathf.FloorToInt(tod.GetHour());
                 int minute = Mathf.FloorToInt(tod.GetMinutes());
                 
-
-                string text = $"zzzDay {day} - {hour:D2}:{minute:D2}";
-                MelonLogger.Msg(text);
-                DrawOnMiddle(__instance, text);
+                string text = $"Day {day}  {hour:D2}:{minute:D2}";
+                // MelonLogger.Msg(text);
+                //DrawOnMiddle(__instance, text);
                 DrawOnTemperatureHUD(__instance, text);
-
             }
 
             private static void DrawOnTemperatureHUD(Panel_HUD __instance, String text)
             {
+                // if the temperature HUD hasn’t been initialized, bail
+                if (TempMeter.tempObject == null) return;
+
+                if (dayNightLabel == null)
+                {
+                    // Create new label as a child of the tempObject’s parent
+                    GameObject parent = TempMeter.tempObject.transform.parent.gameObject;
+                    dayNightLabel = NGUITools.AddWidget<UILabel>(parent);
+
+                    dayNightLabel.name = "DayNightHUDLabel";
+                    dayNightLabel.text = text;
+                    // dayNightLabel.color = Color.yellow;
+                    dayNightLabel.color = new Color(0.9f, 0.95f, 1f);  // Use an off white
+                    dayNightLabel.font = GameManager.GetFontManager().GetUIFontForCharacterSet(CharacterSet.Latin);
+                    dayNightLabel.fontSize = 32;
+                    dayNightLabel.effectStyle = UILabel.Effect.Outline;
+                    dayNightLabel.effectColor = new Color(0.125f, 0.094f, 0.094f, 0.6f);
+                    dayNightLabel.effectDistance = new Vector2(1.7f, 1.7f);
+
+                    dayNightLabel.overflowMethod = UILabel.Overflow.ResizeFreely;
+                    dayNightLabel.alignment = NGUIText.Alignment.Left;
+                    dayNightLabel.pivot = UIWidget.Pivot.Left;
+
+                    // Position it above tempObject
+                    UILabel tempLabel = TempMeter.tempObject.GetComponent<UILabel>();
+                    int y_offset = tempLabel.height + 10; // adjust padding
+                    dayNightLabel.transform.localPosition = TempMeter.tempObject.transform.localPosition + new Vector3(0, y_offset, 0);
+                }
+                else
+                {
+                    // Just update text each frame
+                    dayNightLabel.text = text;
+                }
 
             }
 
