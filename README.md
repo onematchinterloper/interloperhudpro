@@ -1,8 +1,8 @@
 ## Interloper Hud Pro
 
 Interloper HUD Pro enhances your survival experience on Great Bear Island by adding vital stats directly to your HUD — including:
-* Real-time Temperature
 * Date & Time
+* Real-time Temperature
 * Inventory Weight
 * Active Item Condition
 
