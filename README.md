@@ -16,7 +16,7 @@ Stay informed. Stay alive.
 | Feature | Description |
 |----------|--------------|
 | 🕒 **Day & Time** | Displays the in-game day and time |
-| 🌡️ **Temperature** | Shows `Air Temp` / `Wind Chill` / `Feels like`.<br> Temperatures turns red when `Feels like` goes -ve, and you start taking cold damage<br> Absolutely critical info at Interloper/Misery difficulty to avoid 20%/hr cold damage |
+| 🌡️ **Temperature** | Shows `Air Temp` / `Wind Chill` / `Feels like` temperatures<br>Temperature text turns red when `Feels like` goes negative<br>This is absolutely critical info at Interloper/Misery difficulty to avoid:<br>* 20%/hr cold damage<br>* Hypothermia |
 | 🎒 **Inventory Weight** | Keep track of your current carry load |
 | 🔧 **Active Item Condition** | Know your item’s remaining durability at a glance <br> Especially useful to eek out maximum utility for your Torches |
 
