@@ -11,10 +11,25 @@ Stay informed. Stay alive.
 ![Screenshot](./Interloper_hud_pro.png)
 
 
+
+## 📊 Features
+| Feature | Description |
+|----------|--------------|
+| 🕒 **Day & Time** | Displays the in-game day and time |
+| 🌡️ **Temperature** | Shows `Air Temp` / `Wind Chill` / `Feels like`  |
+| 🎒 **Inventory Weight** | Keep track of your current carry load |
+| 🔧 **Active Item Condition** | Know your item’s remaining durability at a glance, especially Torches |
+
+
 ## Installation Notes
 
 * Install The Long Dark
 * Install Melon Mod
-* Copy InterloperHudPro.dll to your TLD Mod folder
-* Start the game and Enjoy your Interloper HUD Pro
+* Copy `InterloperHudPro.dll` into your `Mods` folder inside your game directory.
+* * e.g. for steam users: `C:\Program Files (x86)\Steam\steamapps\common\TheLongDark\Mods\`
+* Start your game
+* Your Interloper HUD Pro will automatically load. No additon configuration required
+
+
+Launch The Long Dark — your new HUD should appear automatically.
 
