@@ -25,11 +25,10 @@ Stay informed. Stay alive.
 
 * Install The Long Dark
 * Install Melon Mod
-* Copy `InterloperHudPro.dll` into your `Mods` folder inside your game directory.
-* * e.g. for steam users: `C:\Program Files (x86)\Steam\steamapps\common\TheLongDark\Mods\`
+* Download the `InterloperHudPro.dll` mod file:
+* * e.g. https://github.com/onematchinterloper/interloperhudpro/releases/download/v1.0.0/InterloperHudPro.dll
+* Copy `InterloperHudPro.dll` into your `Mods` folder inside your game directory:
+* * e.g. for Steam users: `C:\Program Files (x86)\Steam\steamapps\common\TheLongDark\Mods\`
 * Start your game
-* Your Interloper HUD Pro will automatically load. No additon configuration required
-
-
-Launch The Long Dark — your new HUD should appear automatically.
+* Your Interloper HUD Pro will appear automatically. No additon configuration required
 
