@@ -18,7 +18,7 @@ Stay informed. Stay alive.
 | 🕒 **Day & Time** | Displays the in-game day and time |
 | 🌡️ **Temperature** | Shows `Air Temp` / `Wind Chill` / `Feels like`.<br> Absolutely critical info at Interloper/Misery difficulty to avoid 20%/hr cold damage |
 | 🎒 **Inventory Weight** | Keep track of your current carry load |
-| 🔧 **Active Item Condition** | Know your item’s remaining durability at a glance, especially Torches |
+| 🔧 **Active Item Condition** | Know your item’s remaining durability at a glance <br> Especially useful to eek out maximum utility for your Torches |
 
 
 ## Installation Notes
