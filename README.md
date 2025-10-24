@@ -8,6 +8,8 @@ Interloper HUD Pro enhances your survival experience on Great Bear Island by add
 
 Stay informed. Stay alive.
 
+![Screenshot](./Interloper_hud_pro.png)
+
 
 ## Installation Notes
 
@@ -16,4 +18,3 @@ Stay informed. Stay alive.
 * Copy InterloperHudPro.dll to your TLD Mod folder
 * Start the game and Enjoy your Interloper HUD Pro
 
-![Screenshot](./Interloper_hud_pro.png)
