@@ -30,15 +30,22 @@ namespace InterloperHudPro
             MelonLogger.Msg("Interloper HUD PRO Starting");
         }
 
-        public static string getHUDText1()
+    public static string getHUDText1()
         {
             float airTemp = GameManager.GetWeatherComponent().GetCurrentTemperature();
             float clothingBonus = GameManager.GetPlayerManagerComponent().m_WarmthBonusFromClothing;
 
             float windChill = GameManager.GetWeatherComponent().GetCurrentWindchill();
             float clothingWindBonus = GameManager.GetPlayerManagerComponent().m_WindproofBonusFromClothing;
-            float netWindChill = Mathf.Min(windChill + clothingWindBonus, 0f);  // max 0, no warming from wind
-            float feelsLike = airTemp + clothingBonus + netWindChill;
+            float netWindChill = Mathf.Min(windChill + clothingWindBonus, 0f);  // max 0,  no warming from wind
+            
+            float frigidBonesBonus = 0;
+            if (GameManager.GetConditionComponent().HasSpecificAffliction(AfflictionType.PoorCirculation))
+            {
+                // Misery FrigidBones Penalty (i.e. PoorCirculation)
+                frigidBonesBonus -= 5;
+            }
+            float feelsLike = airTemp + clothingBonus + netWindChill + frigidBonesBonus;
 
             float currentWeight = GameManager.GetInventoryComponent().GetTotalWeightKG().m_Units / 1e9f;
 
