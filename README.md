@@ -28,8 +28,8 @@ Stay informed. Stay alive.
 1. Install The Long Dark
 1. Install Melon Mod
 1. Download the `InterloperHudPro.dll` mod file:
-    - https://github.com/onematchinterloper/interloperhudpro/releases/download/v1.0.1/InterloperHudPro.zip
-1. Unzip `InterloperHudPro.zip` and Copy `InterloperHudPro.dll` into your `Mods` folder inside your game directory:
+    - https://github.com/onematchinterloper/interloperhudpro/releases/download/v1.0.1/InterloperHudPro.dll.zip
+1. Unzip `InterloperHudPro.dll.zip` and Copy `InterloperHudPro.dll` into your `Mods` folder inside your game directory:
     - For Steam users, the path is typically:
     - C:\Program Files (x86)\Steam\steamapps\common\TheLongDark\Mods\
 1. Start your game
